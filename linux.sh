@@ -31,6 +31,7 @@ BASE="https://repo.zabbix.com/zabbix/${ZBX_MAJOR}"
 # Valor: URL del paquete zabbix-release
 declare -A RELEASE_URL=(
   # Ubuntu / Debian (.deb)
+  ["ubuntu-26.04"]="${BASE}/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_${ZBX_MAJOR}+ubuntu24.04_all.deb"
   ["ubuntu-24.04"]="${BASE}/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_${ZBX_MAJOR}+ubuntu24.04_all.deb"
   ["ubuntu-22.04"]="${BASE}/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_${ZBX_MAJOR}+ubuntu22.04_all.deb"
   ["debian-12"]="${BASE}/debian/pool/main/z/zabbix-release/zabbix-release_latest_${ZBX_MAJOR}+debian12_all.deb"
