@@ -25,7 +25,7 @@ set -euo pipefail
 
 # ----------------------------- Configuración -----------------------------
 ZBX_MAJOR="7.0"
-ZBX_SERVERS="192.168.100.200,192.168.100.205,172.16.0.205"
+ZBX_SERVERS="192.168.100.200"
 ZBX_ACTIVE=""            # vacío = igual que ZBX_SERVERS
 ZBX_TIMEOUT="30"
 ZBX_PORT="10050"
