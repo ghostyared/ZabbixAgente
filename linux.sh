@@ -50,6 +50,7 @@ EL10="${BASE}/rhel/10/@ARCH@/zabbix-release-latest-${ZBX_MAJOR}.el10.noarch.rpm"
 
 declare -A RELEASE_URL=(
   # Ubuntu / Debian (.deb)
+  ["ubuntu-26.04"]="${BASE}/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_${ZBX_MAJOR}+ubuntu26.04_all.deb"
   ["ubuntu-24.04"]="${BASE}/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_${ZBX_MAJOR}+ubuntu24.04_all.deb"
   ["ubuntu-22.04"]="${BASE}/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_${ZBX_MAJOR}+ubuntu22.04_all.deb"
   ["debian-12"]="${BASE}/debian/pool/main/z/zabbix-release/zabbix-release_latest_${ZBX_MAJOR}+debian12_all.deb"
@@ -155,6 +156,10 @@ if [[ "$FORCE_GENERIC" == "yes" || -z "$RELEASE" ]]; then
   log "Se usará el binario estático genérico de Zabbix Agent 1 (ver NOTA_AGENTE_GENERICO)."
 else
   RELEASE="${RELEASE//@ARCH@/$ARCH}"
+  # En arm64 Zabbix publica los .deb de Ubuntu en un árbol aparte (ubuntu-arm64).
+  if [[ "$RELEASE" == *.deb && ( "$ARCH" == "aarch64" || "$ARCH" == "arm64" ) ]]; then
+    RELEASE="${RELEASE/\/zabbix\/${ZBX_MAJOR}\/ubuntu\//\/zabbix\/${ZBX_MAJOR}\/ubuntu-arm64\/}"
+  fi
   # Verifica que la URL exista antes de instalar (evita errores 404 a mitad de camino)
   if command -v curl >/dev/null 2>&1; then
     if ! curl -fsIL --max-time 20 "$RELEASE" >/dev/null; then
@@ -185,6 +190,13 @@ install_deb() {
   local tmp; tmp="$(mktemp --suffix=.deb)"
   if command -v wget >/dev/null 2>&1; then wget -q -O "$tmp" "$RELEASE"; else curl -fsSL -o "$tmp" "$RELEASE"; fi
   dpkg -i "$tmp"; rm -f "$tmp"
+  # Ubuntu/Debian traen su propio paquete zabbix* (universe) que puede ganar por número de
+  # versión. Se prioriza el repo oficial para quedar en el 7.0 LTS vigente.
+  cat > /etc/apt/preferences.d/zabbix-official <<'EOF'
+Package: zabbix*
+Pin: origin repo.zabbix.com
+Pin-Priority: 1001
+EOF
   # AllowReleaseInfoChange evita que apt-get update falle por cambios de metadatos
   # (p. ej. 'Label') en repos de terceros que no tienen nada que ver con Zabbix.
   apt-get update -qq -o Acquire::AllowReleaseInfoChange=true
